@@ -1,0 +1,7 @@
+---
+
+- name: Reload Supervisord
+  command: "{{ item.cmd }} {{ item.args }}"
+  with_items:
+    - { cmd: "{{ exefile_supervisorctl }}", args: "-c {{ supervisord_cfg_file }} shutdown" }
+    - { cmd: "{{ exefile_supervisord }}", args: "-c {{ supervisord_cfg_file }}" }

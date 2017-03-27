@@ -1,0 +1,86 @@
+---
+
+- name: Create Deploy Target Dir
+  file: path={{ item.path }} state=directory
+  with_items:
+    - { path: "{{ app_cfg_dir_path }}" }
+    - { path: "{{ app_log_dir_path }}" }
+    - { path: "{{ app_tmp_dir_path }}" }
+
+- name: Upload PIP Requirements File
+  copy: src=../requirements.pip dest={{ app_requirements_file }}
+
+- name: Upload Supervisord Config File
+  template: src=../supervisord/supervisord.conf dest={{ supervisord_cfg_file }}
+
+- name: Stop Running APP If Exist
+  command: "{{ exefile_supervisorctl }} -c {{ supervisord_cfg_file }} shutdown"
+  ignore_errors: True
+
+# Avoid script terminated unexpectedly.
+- name: Check If Virtualenv Already Exist
+  stat: path={{ exefile_pip }}
+  register: venv
+
+- name: Create Virtualenv
+  command: "virtualenv -p {{ remote_python27_path }} {{ pyenv_path }}"
+  when: not venv.stat.exists
+
+- name: Update Virtualenv && Install APP Runtime Env Requirements (From PyPI)
+  command: "{{ exefile_pip }} install --upgrade {{ item.option }} {{ item.name }}"
+  with_items:
+    - { option: '', name: 'pip' }
+    - { option: '', name: 'wheel' }
+    - { option: '', name: 'setuptools' }
+    - { option: '-r', name: '{{ app_requirements_file }}' }
+  when: pypi_source_host is not defined
+
+- name: Update Virtualenv && Install APP Runtime Env Requirements (From Other Source)
+  command: "{{ exefile_pip }} install --upgrade {{ item.option }} {{ item.name }} -i http://{{ pypi_source_host }}/simple --trusted-host {{ pypi_source_host }}"
+  with_items:
+    - { option: '', name: 'pip' }
+    - { option: '', name: 'wheel' }
+    - { option: '', name: 'setuptools' }
+    - { option: '-r', name: '{{ app_requirements_file }}' }
+  when: pypi_source_host is defined
+
+- name: Clean Requirements File
+  file: path={{ app_requirements_file }} state=absent
+
+
+# Only if git submodule exist
+- name: Check If Git Submodules Exist
+  stat: path=../{{ app_name }}/.gitmodules
+  register: submodule
+  become: no
+  delegate_to: localhost
+
+- name: Pip Wheel Git Submodules Local (Install Dependences From PyPI)
+  shell: "pip wheel -w /tmp/wheelhouse/{{ app_name }} `grep path ../{{ app_name }}/.gitmodules|sed 's#path = #../{{ app_name }}/#g'`"
+  become: no
+  delegate_to: localhost
+  when: submodule.stat.exists and pypi_source_host is not defined
+
+- name: Pip Wheel Git Submodules Local (Install Dependences From Other Source)
+  shell: "pip wheel -w /tmp/wheelhouse/{{ app_name }} `grep path ../{{ app_name }}/.gitmodules|sed 's#path = #../{{ app_name }}/#g'` -i http://{{ pypi_source_host }}/simple --trusted-host {{ pypi_source_host }}"
+  become: no
+  delegate_to: localhost
+  when: submodule.stat.exists and pypi_source_host is defined
+
+- name: Upload Pip Wheel Packages
+  copy: src=/tmp/wheelhouse/{{ app_name }} dest={{ app_tmp_dir_path }}/wheelhouse
+  when: submodule.stat.exists
+
+- name: Install Pip Wheel Packages
+  shell: "{{ exefile_pip }} install {{ app_tmp_dir_path }}/wheelhouse/{{ app_name }}/*"
+  when: submodule.stat.exists
+
+- name: Clean Pip Wheel Packages
+  file: path={{ app_tmp_dir_path }}/wheelhouse state=absent
+  when: submodule.stat.exists
+
+- name: Clean Pip Wheel Packages Local
+  file: path=/tmp/wheelhouse/{{ app_name }} state=absent
+  become: no
+  delegate_to: localhost
+  when: submodule.stat.exists

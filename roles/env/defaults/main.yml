@@ -1,0 +1,15 @@
+---
+
+deploy_target_path: "{{ remote_home_path }}/{{ app_name }}"
+app_cfg_dir_path: "{{ deploy_target_path }}/etc"
+app_tmp_dir_path: "{{ deploy_target_path }}/tmp"
+app_log_dir_path: "{{ deploy_target_path }}/log"
+
+app_requirements_file: "{{ app_cfg_dir_path }}/requirements.pip"
+pyenv_path: "{{ deploy_target_path }}/env"
+exefile_python: "{{ pyenv_path }}/bin/python"
+exefile_pip: "{{ pyenv_path }}/bin/pip"
+
+supervisord_cfg_file: "{{ app_cfg_dir_path }}/supervisord.conf"
+exefile_supervisord: "{{ pyenv_path }}/bin/supervisord"
+exefile_supervisorctl: "{{ pyenv_path }}/bin/supervisorctl"
