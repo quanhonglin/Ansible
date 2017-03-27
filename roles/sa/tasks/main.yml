@@ -1,0 +1,26 @@
+---
+
+# Ansible apt/yum module didn't work well with 'with_lines: cat xxxx'
+- name: Upload System Requirements File (Debian based)
+  copy: src=../sa/debain dest=/tmp/sa_debain
+  when: ansible_os_family == "Debian"
+
+- name: Install Required System Packages (Debian based)
+  shell: "apt-get install -y `cat /tmp/sa_debain`"
+  when: ansible_os_family == "Debian"
+
+- name: Clean System Requirements File (Debian based)
+  file: path=/tmp/sa_debain state=absent
+  when: ansible_os_family == "Debian"
+
+- name: Upload System Requirements File (RedHat based)
+  copy: src=../sa/centos dest=/tmp/sa_centos
+  when: ansible_os_family == "RedHat"
+
+- name: Install Required System Packages (RedHat based)
+  shell: "yum install -y `cat /tmp/sa_centos`"
+  when: ansible_os_family == "RedHat"
+
+- name: Clean System Requirements File (RedHat based)
+  file: path=/tmp/sa_centos state=absent
+  when: ansible_os_family == "RedHat"

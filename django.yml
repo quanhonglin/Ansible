@@ -1,0 +1,10 @@
+---
+
+- hosts: "appserver"
+  become_method: sudo
+  become: yes
+  become_user: "{{ become_user }}"
+  roles:
+    - env
+    - uwsgi
+    - django

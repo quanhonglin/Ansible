@@ -1,0 +1,4 @@
+---
+
+sentry_cfg_file: "{{ app_cfg_dir_path }}/sentry.conf.py"
+exefile_sentry: "{{ pyenv_path }}/bin/sentry"

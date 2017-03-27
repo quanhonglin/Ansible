@@ -1,0 +1,15 @@
+---
+
+- hosts: "appserver"
+  remote_user: root
+  become: no
+  roles:
+    - sa
+
+- hosts: "appserver"
+  become: yes
+  become_method: sudo
+  become_user: "{{ become_user }}"
+  roles:
+    - env
+    - sentry

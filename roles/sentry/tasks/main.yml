@@ -1,0 +1,12 @@
+---
+
+- name: Upload Sentry Config file
+  template: src=../sentry/sentry.conf.py dest={{ sentry_cfg_file }}
+
+- name: Upload Sentry_Supervisord Config file
+  template: src=../sentry/sentry_supervisord.conf dest={{ app_cfg_dir_path }}/supervisord_included.conf
+
+- name: Run Sentry Upgrade Command
+  shell: "{{ exefile_sentry }} --config={{ sentry_cfg_file }} upgrade --noinput"
+  notify:
+    - Reload Supervisord

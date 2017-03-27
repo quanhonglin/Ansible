@@ -1,0 +1,5 @@
+---
+
+uwsgi_cfg_file: "{{ app_cfg_dir_path }}/uwsgi.conf"
+uwsgi_process_num: "{{ ansible_processor_vcpus }}"
+exefile_uwsgi: "{{ pyenv_path }}/bin/uwsgi"
