@@ -40,10 +40,6 @@
       app_path: "{{ app_entry_path }}"
       virtualenv: "{{ pyenv_path }}"
 
-- name: Run Django Translation Scripts
-  shell: "source {{ pyenv_path }}/bin/activate && /bin/sh {{ app_entry_path }}/scripts/django_translation.sh"
-  ignore_errors: True
-
 - name: Prepare For Deploy Media File
   file: path={{ django_media_root }} state=directory
   when: django_media_root is defined

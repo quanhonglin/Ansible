@@ -4,4 +4,4 @@
   template: src=../uwsgi/uwsgi.conf dest={{ uwsgi_cfg_file }}
 
 - name: Upload uWSGI_Supervisord Config file
-  template: src=../uwsgi/uwsgi_supervisord.conf dest={{ app_cfg_dir_path }}/supervisord_included.conf
+  template: src=../uwsgi/uwsgi_supervisord.conf dest={{ app_cfg_dir_path }}/uwsgi_supervisord_included.conf
